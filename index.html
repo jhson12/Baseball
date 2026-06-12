@@ -174,6 +174,14 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
 }
 .pos-pool .chip.sel{background:var(--field);border-color:var(--field);color:#fff;font-weight:700}
 .video-inputs .video-row{display:grid;grid-template-columns:1fr 2fr auto;gap:8px;margin-bottom:8px}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 10px}
+.photo-grid:empty{margin:0}
+.photo-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block;background:#EFE7E0}
+.draft-photo{position:relative}
+.draft-photo .x{
+  position:absolute;top:5px;right:5px;width:21px;height:21px;border-radius:50%;border:0;
+  background:rgba(0,0,0,.55);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;
+}
 .btn-add{border:1px dashed var(--line);background:var(--paper);border-radius:10px;padding:9px;width:100%;font-size:13px;color:var(--muted)}
 .btn-primary{
   width:100%;background:var(--stitch);color:#fff;border:0;border-radius:12px;
@@ -215,6 +223,7 @@ nav.tabbar{
   display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:500;
 }
 .tabbar button .ic{font-size:19px;line-height:1}
+.tabbar button svg.ic{width:19px;height:19px;display:block}
 .tabbar button.active{color:var(--stitch);font-weight:700}
 .view{display:none}
 .view.active{display:block}
@@ -368,6 +377,11 @@ dialog::backdrop{background:rgba(14,59,44,.5)}
       <div class="video-inputs" id="videoInputs"></div>
       <button type="button" class="btn-add" onclick="addVideoRow()">＋ 영상 링크 추가 (유튜브 권장)</button>
 
+      <div class="section-label" style="margin-top:20px">경기 사진</div>
+      <div class="photo-grid" id="photoGrid"></div>
+      <button type="button" class="btn-add" onclick="pickPhotos()">＋ 사진 추가 (자동으로 구글 드라이브에 저장)</button>
+      <input type="file" id="photoFile" accept="image/*" multiple style="display:none" onchange="handlePhotoFiles(this.files)">
+
       <div style="margin-top:16px">
         <label class="f-label" for="fMemo">경기 메모</label>
         <textarea id="fMemo" placeholder="오늘 컨디션, 코치님 코멘트, 기억하고 싶은 장면..."></textarea>
@@ -395,7 +409,7 @@ dialog::backdrop{background:rgba(14,59,44,.5)}
 
 <nav class="tabbar" aria-label="메뉴">
   <button class="active" data-v="home" onclick="go('home')"><span class="ic">⌂</span>홈</button>
-  <button data-v="games" onclick="go('games')"><span class="ic">⚾</span>경기</button>
+  <button data-v="games" onclick="go('games')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M6.3 5.3a14 14 0 0 1 0 13.4"/><path d="M17.7 5.3a14 14 0 0 0 0 13.4"/></svg>경기</button>
   <button data-v="input" onclick="go('input')"><span class="ic">✎</span>입력</button>
   <button data-v="stats" onclick="go('stats')"><span class="ic">▦</span>통계</button>
 </nav>
@@ -460,6 +474,7 @@ let sheetUrl = '';
 let lastSync = null;
 let draftABs = [];      // 입력 중 타석
 let draftPos = [];      // 입력 중 포지션
+let draftPhotos = [];   // 입력 중 사진
 let editingId = null;
 
 /* ================= 저장소 =================
@@ -774,6 +789,10 @@ function gameBodyHTML(g){
   if(s.runs) extra.push(`득점 ${s.runs}`);
   if(s.sb) extra.push(`도루 ${s.sb}`);
   if(extra.length) html += `<div class="pos-tags">${extra.join(' · ')}</div>`;
+  if((g.photos||[]).length){
+    html += `<div class="photo-grid" style="margin:10px 0">` + g.photos.map(p=>
+      `<a href="${escAttr(p.view||p.url)}" target="_blank" rel="noopener"><img src="${escAttr(p.url)}" alt="경기 사진" loading="lazy"></a>`).join('') + `</div>`;
+  }
   if(g.memo) html += `<div class="memo-box">${esc(g.memo)}</div>`;
   (g.videos||[]).forEach(v=>{
     const emb = ytEmbed(v.url);
@@ -888,7 +907,8 @@ function collectVideos(){
   }).filter(v=>v.url);
 }
 function resetForm(){
-  editingId = null; draftABs=[]; draftPos=[];
+  editingId = null; draftABs=[]; draftPos=[]; draftPhotos=[];
+  renderDraftPhotos();
   document.getElementById('inputTitle').firstChild.textContent = '새 경기 기록';
   document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
   ['fOpp','fPlace','fScoreUs','fScoreThem','fRbi','fRuns','fSb','fMemo'].forEach(id=>document.getElementById(id).value='');
@@ -917,6 +937,7 @@ async function saveGame(){
     runs: document.getElementById('fRuns').value,
     sb: document.getElementById('fSb').value,
     positions: [...draftPos],
+    photos: [...draftPhotos],
     videos: collectVideos(),
     memo: document.getElementById('fMemo').value.trim()
   };
@@ -945,6 +966,7 @@ function editGame(id){
   document.getElementById('fSb').value = g.sb||'';
   draftPos = [...(g.positions||[])];
   document.querySelectorAll('#posChips .chip').forEach(el=>el.classList.toggle('sel', draftPos.includes(el.dataset.p)));
+  draftPhotos = [...(g.photos||[])]; renderDraftPhotos();
   (g.videos||[]).forEach(v=>addVideoRow(v.title,v.url));
   document.getElementById('fMemo').value = g.memo||'';
   document.getElementById('saveBtn').textContent='수정 내용 저장';
@@ -958,6 +980,64 @@ async function deleteGame(id){
   await persist(); render();
   toast('삭제했습니다');
 }
+
+/* ================= 사진 (구글 드라이브 업로드) ================= */
+function pickPhotos(){
+  if(storeMode!=='sheet'){
+    toast('사진 기능은 구글시트 연동 후 사용할 수 있어요 (선수 정보에서 연결)');
+    return;
+  }
+  document.getElementById('photoFile').click();
+}
+async function handlePhotoFiles(files){
+  const list = [...files].filter(f=>f.type.startsWith('image/'));
+  let n = 0;
+  for(const f of list){
+    try{
+      toast(`사진 올리는 중… (${++n}/${list.length})`);
+      const {data, mime} = await compressImage(f);
+      const res = await fetch(sheetUrl, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({action:'photo', name:f.name||'photo.jpg', mime, data})
+      });
+      const j = await res.json();
+      if(!j || !j.ok) throw new Error('upload failed');
+      draftPhotos.push({id:j.id, url:j.url, view:j.view});
+      renderDraftPhotos();
+    }catch(e){
+      toast('사진 업로드 실패 — 시트의 스크립트를 사진 버전으로 업데이트했는지 확인해 주세요');
+      break;
+    }
+  }
+  if(n===list.length && n>0) toast(`사진 ${n}장 업로드 완료 📸`);
+  document.getElementById('photoFile').value='';
+}
+function compressImage(file, maxDim=1280, q=0.78){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      try{
+        const s = Math.min(1, maxDim/Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(img.width*s));
+        c.height = Math.max(1, Math.round(img.height*s));
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        const dataUrl = c.toDataURL('image/jpeg', q);
+        URL.revokeObjectURL(img.src);
+        resolve({data:dataUrl.split(',')[1], mime:'image/jpeg'});
+      }catch(err){ reject(err); }
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+function renderDraftPhotos(){
+  document.getElementById('photoGrid').innerHTML = draftPhotos.map((p,i)=>
+    `<div class="draft-photo"><img src="${escAttr(p.url)}" alt="경기 사진" loading="lazy">
+     <button type="button" class="x" aria-label="사진 삭제" onclick="removePhoto(${i})">✕</button></div>`).join('');
+}
+function removePhoto(i){ draftPhotos.splice(i,1); renderDraftPhotos(); }
 
 /* ================= 설정 ================= */
 function openSettings(){
