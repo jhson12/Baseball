@@ -223,7 +223,7 @@ nav.tabbar{
   display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:500;
 }
 .tabbar button .ic{font-size:19px;line-height:1}
-.tabbar button svg.ic{width:19px;height:19px;display:block}
+.tabbar button svg.ic{width:19px;height:19px;display:block;padding:2px}
 .tabbar button.active{color:var(--stitch);font-weight:700}
 .view{display:none}
 .view.active{display:block}
@@ -409,7 +409,7 @@ dialog::backdrop{background:rgba(14,59,44,.5)}
 
 <nav class="tabbar" aria-label="메뉴">
   <button class="active" data-v="home" onclick="go('home')"><span class="ic">⌂</span>홈</button>
-  <button data-v="games" onclick="go('games')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M6.3 5.3a14 14 0 0 1 0 13.4"/><path d="M17.7 5.3a14 14 0 0 0 0 13.4"/></svg>경기</button>
+  <button data-v="games" onclick="go('games')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M6.3 5.3a14 14 0 0 1 0 13.4"/><path d="M17.7 5.3a14 14 0 0 0 0 13.4"/></svg>경기</button>
   <button data-v="input" onclick="go('input')"><span class="ic">✎</span>입력</button>
   <button data-v="stats" onclick="go('stats')"><span class="ic">▦</span>통계</button>
 </nav>
