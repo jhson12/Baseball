@@ -4,31 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>우리집 야구 기록실</title>
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --field:#0E3B2C;        /* 외야 잔디 그린 (스코어보드) */
-  --field-deep:#0A2B20;
-  --amber:#F5B40A;        /* 전광판 앰버 */
-  --stitch:#C8102E;       /* 야구공 실밥 레드 */
-  --paper:#F6F5F0;        /* 기록지 종이 */
-  --line:#DDD9CC;
-  --ink:#1C231F;
-  --muted:#6E7A72;
+  --field:#B11226;        /* 송파리틀 유니폼 레드 */
+  --field-deep:#7C0C1B;
+  --amber:#F5B40A;        /* 골드 포인트 */
+  --stitch:#B11226;       /* 액션 레드 (팀 컬러와 통일) */
+  --steel:#41454E;        /* 패배/보조 차콜 */
+  --paper:#FAF6F2;        /* 따뜻한 기록지 종이 */
+  --line:#E5DBD3;
+  --ink:#231C1E;
+  --muted:#85726F;
   --card:#FFFFFF;
   --radius:14px;
+  --font-display:'Jua',sans-serif;
+  --font-body:'Gowun Dodum',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{
-  font-family:'IBM Plex Sans KR',sans-serif;
+  font-family:var(--font-body);
   background:var(--paper);
   color:var(--ink);
   min-height:100vh;
   padding-bottom:84px;
 }
 .num{font-family:'Oswald',sans-serif;letter-spacing:.02em}
-h1,h2,h3,.display{font-family:'Black Han Sans',sans-serif;font-weight:400}
+h1,h2,h3,.display{font-family:var(--font-display);font-weight:400}
 
 /* ===== 헤더 ===== */
 header{
@@ -49,8 +52,8 @@ header::after{ /* 베이스라인 초크 */
   font-family:'Oswald',sans-serif;font-size:30px;font-weight:600;color:var(--amber);
   line-height:1;flex-shrink:0;
 }
-.player-name{font-family:'Black Han Sans',sans-serif;font-size:22px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.player-team{font-size:12px;color:#BFD3C9;margin-top:2px}
+.player-name{font-family:var(--font-display);font-size:22px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-team{font-size:12px;color:#F3C9CE;margin-top:2px}
 .edit-btn{
   background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;
   border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;flex-shrink:0;
@@ -69,33 +72,32 @@ button{font-family:inherit;cursor:pointer}
 :focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-/* ===== 스코어보드 (시그니처) ===== */
+/* ===== 스코어보드 (화이트 보드 · 레드 포인트) ===== */
 .scoreboard{
-  background:linear-gradient(180deg,var(--field) 0%,var(--field-deep) 100%);
+  background:#FFFFFF;
   border-radius:var(--radius);
-  border:3px solid #08231A;
-  box-shadow:0 6px 0 #08231A, inset 0 0 0 1px rgba(245,180,10,.25);
+  border:2px solid var(--field);
+  box-shadow:0 5px 0 #E3B9BE;
   padding:16px 14px 14px;
-  color:#fff;
+  color:var(--ink);
 }
 .sb-title{
-  text-align:center;font-size:11px;letter-spacing:.3em;color:#9DB8AC;
-  border-bottom:1px solid rgba(255,255,255,.15);padding-bottom:8px;margin-bottom:12px;
+  text-align:center;font-size:11px;letter-spacing:.3em;color:var(--field);
+  border-bottom:1px solid #F0DCDE;padding-bottom:8px;margin-bottom:12px;
 }
 .sb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .sb-cell{text-align:center}
 .sb-val{
-  font-family:'Oswald',sans-serif;font-size:30px;font-weight:600;color:var(--amber);
+  font-family:'Oswald',sans-serif;font-size:30px;font-weight:600;color:var(--field);
   line-height:1.1;
-  text-shadow:0 0 14px rgba(245,180,10,.45);
   font-variant-numeric:tabular-nums;
 }
-.sb-key{font-size:11px;color:#9DB8AC;margin-top:3px;letter-spacing:.08em}
+.sb-key{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.08em}
 .sb-sub{
   display:flex;justify-content:center;gap:16px;margin-top:12px;padding-top:10px;
-  border-top:1px solid rgba(255,255,255,.15);font-size:12px;color:#CFE0D7;
+  border-top:1px solid #F0DCDE;font-size:12px;color:var(--muted);
 }
-.sb-sub b{color:#fff;font-family:'Oswald',sans-serif;font-weight:600;margin-left:4px}
+.sb-sub b{color:var(--field);font-family:'Oswald',sans-serif;font-weight:600;margin-left:4px}
 
 /* ===== 경기 카드 ===== */
 .game-card{margin-bottom:12px;overflow:hidden;padding:0}
@@ -106,22 +108,22 @@ button{font-family:inherit;cursor:pointer}
 .result-chip{
   width:38px;height:38px;border-radius:10px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  font-family:'Black Han Sans',sans-serif;font-size:18px;color:#fff;
+  font-family:var(--font-display);font-size:18px;color:#fff;
 }
-.result-W{background:var(--field)} .result-L{background:var(--stitch)} .result-D{background:#8A8F89}
+.result-W{background:var(--field)} .result-L{background:var(--steel)} .result-D{background:#9A9089}
 .game-meta{flex:1;min-width:0}
 .game-vs{font-weight:700;font-size:15px}
 .game-date{font-size:12px;color:var(--muted);margin-top:2px}
 .game-line{font-family:'Oswald',sans-serif;font-size:14px;color:var(--ink);text-align:right;flex-shrink:0}
-.game-line .video-mark{color:var(--stitch);font-size:11px;display:block;font-family:'IBM Plex Sans KR',sans-serif}
+.game-line .video-mark{color:var(--stitch);font-size:11px;display:block;font-family:var(--font-body)}
 .game-body{border-top:1px dashed var(--line);padding:14px 16px;display:none}
 .game-card.open .game-body{display:block}
 .ab-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .ab-tag{
   font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--paper);
 }
-.ab-tag.hit{border-color:var(--field);color:var(--field);font-weight:700;background:#EDF4F0}
-.ab-tag.hr{border-color:var(--stitch);color:var(--stitch);font-weight:700;background:#FBEDEF}
+.ab-tag.hit{border-color:var(--field);color:var(--field);font-weight:700;background:#FBEDEF}
+.ab-tag.hr{border-color:#D89B00;color:#9A6E00;font-weight:700;background:#FFF3D6}
 .memo-box{
   background:var(--paper);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;
   padding:10px 12px;font-size:13px;line-height:1.6;margin:10px 0;white-space:pre-wrap;
@@ -135,7 +137,7 @@ button{font-family:inherit;cursor:pointer}
 .btn-sm{
   font-size:12px;border-radius:8px;padding:7px 14px;border:1px solid var(--line);background:#fff;color:var(--ink);
 }
-.btn-sm.danger{color:var(--stitch);border-color:#EBC4CB}
+.btn-sm.danger{color:var(--stitch);border-color:#E8C2C7}
 .pos-tags{font-size:12px;color:var(--muted);margin-bottom:8px}
 
 /* ===== 입력 폼 ===== */
@@ -152,15 +154,15 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
   flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 0;font-size:14px;font-weight:700;color:var(--muted);
 }
 .seg button.on-W{background:var(--field);border-color:var(--field);color:#fff}
-.seg button.on-L{background:var(--stitch);border-color:var(--stitch);color:#fff}
-.seg button.on-D{background:#8A8F89;border-color:#8A8F89;color:#fff}
+.seg button.on-L{background:var(--steel);border-color:var(--steel);color:#fff}
+.seg button.on-D{background:#9A9089;border-color:#9A9089;color:#fff}
 .chip-pool{display:flex;flex-wrap:wrap;gap:7px}
 .chip{
   border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 13px;font-size:13px;color:var(--ink);
 }
 .chip:active{transform:scale(.96)}
 .chip.cat-hit{border-color:var(--field);color:var(--field);font-weight:700}
-.chip.cat-hr{border-color:var(--stitch);color:var(--stitch);font-weight:700}
+.chip.cat-hr{border-color:#D89B00;color:#9A6E00;font-weight:700}
 .ab-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:30px}
 .ab-pill{
   display:inline-flex;align-items:center;gap:6px;font-size:13px;background:var(--paper);
@@ -175,17 +177,17 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
 .btn-add{border:1px dashed var(--line);background:var(--paper);border-radius:10px;padding:9px;width:100%;font-size:13px;color:var(--muted)}
 .btn-primary{
   width:100%;background:var(--stitch);color:#fff;border:0;border-radius:12px;
-  font-family:'Black Han Sans',sans-serif;font-size:17px;padding:15px;margin-top:18px;
-  box-shadow:0 4px 0 #8E0B20;
+  font-family:var(--font-display);font-size:17px;padding:15px;margin-top:18px;
+  box-shadow:0 4px 0 #7C0C1B;
 }
-.btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #8E0B20}
+.btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #7C0C1B}
 .cancel-edit{width:100%;margin-top:10px;background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline}
 
 /* ===== 통계 ===== */
 .stat-table{width:100%;border-collapse:collapse;font-size:13px}
 .stat-table th{font-size:11px;color:var(--muted);font-weight:500;padding:6px 4px;border-bottom:2px solid var(--ink);text-align:center}
 .stat-table td{padding:8px 4px;text-align:center;border-bottom:1px solid var(--line);font-family:'Oswald',sans-serif;font-variant-numeric:tabular-nums}
-.stat-table td:first-child{font-family:'IBM Plex Sans KR',sans-serif;text-align:left;font-weight:500}
+.stat-table td:first-child{font-family:var(--font-body);text-align:left;font-weight:500}
 .chart-wrap{overflow-x:auto}
 svg.chart{display:block;width:100%;height:170px}
 
@@ -724,14 +726,14 @@ function renderDiamond(){
   const count = {};
   state.games.forEach(g=>(g.positions||[]).forEach(p=>count[p]=(count[p]||0)+1));
   const max = Math.max(1,...Object.values(count));
-  let svg = `<polygon points="75,118 117,76 75,34 33,76" fill="#EDE8DA" stroke="#C9C2AE"/>
-    <line x1="75" y1="118" x2="20" y2="60" stroke="#C9C2AE" stroke-dasharray="3 3"/>
-    <line x1="75" y1="118" x2="130" y2="60" stroke="#C9C2AE" stroke-dasharray="3 3"/>`;
+  let svg = `<polygon points="75,118 117,76 75,34 33,76" fill="#F2E8E0" stroke="#D8C7BB"/>
+    <line x1="75" y1="118" x2="20" y2="60" stroke="#D8C7BB" stroke-dasharray="3 3"/>
+    <line x1="75" y1="118" x2="130" y2="60" stroke="#D8C7BB" stroke-dasharray="3 3"/>`;
   POSITIONS.forEach(p=>{
     const c = count[p]||0; if(!POS_XY[p]) return;
     const [x,y]=POS_XY[p];
     const r = c? 6+8*(c/max) : 3;
-    svg += `<circle cx="${x}" cy="${y}" r="${r}" fill="${c?'var(--stitch)':'#D8D3C4'}" opacity="${c?0.9:0.7}"/>`;
+    svg += `<circle cx="${x}" cy="${y}" r="${r}" fill="${c?'var(--stitch)':'#E0D2C7'}" opacity="${c?0.9:0.7}"/>`;
     if(c) svg += `<text x="${x}" y="${y+3}" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">${c}</text>`;
   });
   document.getElementById('diamondSvg').innerHTML = svg;
@@ -821,8 +823,8 @@ function renderAvgChart(){
   let path = pts.map((v,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
   let dots = pts.map((v,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.5" fill="var(--stitch)"/>`).join('');
   const grid = [0.2,0.4].filter(v=>v<=maxV).map(v=>
-    `<line x1="${P}" x2="${W-P}" y1="${y(v)}" y2="${y(v)}" stroke="#E4E0D2"/>
-     <text x="${P-5}" y="${y(v)+3}" text-anchor="end" font-size="9" fill="#9a9a8d">${f3(v)}</text>`).join('');
+    `<line x1="${P}" x2="${W-P}" y1="${y(v)}" y2="${y(v)}" stroke="#EFE3DB"/>
+     <text x="${P-5}" y="${y(v)+3}" text-anchor="end" font-size="9" fill="#A89890">${f3(v)}</text>`).join('');
   const last = pts[pts.length-1];
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
   svg.innerHTML = grid +
