@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>우리집 야구 기록실</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --field:#0E3B2C;        /* 외야 잔디 그린 (스코어보드) */
+  --field-deep:#0A2B20;
+  --amber:#F5B40A;        /* 전광판 앰버 */
+  --stitch:#C8102E;       /* 야구공 실밥 레드 */
+  --paper:#F6F5F0;        /* 기록지 종이 */
+  --line:#DDD9CC;
+  --ink:#1C231F;
+  --muted:#6E7A72;
+  --card:#FFFFFF;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'IBM Plex Sans KR',sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  min-height:100vh;
+  padding-bottom:84px;
+}
+.num{font-family:'Oswald',sans-serif;letter-spacing:.02em}
+h1,h2,h3,.display{font-family:'Black Han Sans',sans-serif;font-weight:400}
+
+/* ===== 헤더 ===== */
+header{
+  background:var(--field);
+  color:#fff;
+  padding:18px 20px 14px;
+  position:relative;
+  overflow:hidden;
+}
+header::after{ /* 베이스라인 초크 */
+  content:'';position:absolute;left:0;right:0;bottom:0;height:4px;
+  background:repeating-linear-gradient(90deg,var(--amber) 0 22px,transparent 22px 34px);
+  opacity:.85;
+}
+.header-row{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:760px;margin:0 auto}
+.player-id{display:flex;align-items:baseline;gap:10px;min-width:0}
+.player-no{
+  font-family:'Oswald',sans-serif;font-size:30px;font-weight:600;color:var(--amber);
+  line-height:1;flex-shrink:0;
+}
+.player-name{font-family:'Black Han Sans',sans-serif;font-size:22px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-team{font-size:12px;color:#BFD3C9;margin-top:2px}
+.edit-btn{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;
+  border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;flex-shrink:0;
+}
+.edit-btn:hover{background:rgba(255,255,255,.2)}
+
+/* ===== 공용 ===== */
+main{max-width:760px;margin:0 auto;padding:18px 16px 30px}
+.section-label{
+  font-size:12px;color:var(--muted);letter-spacing:.14em;
+  margin:22px 2px 10px;display:flex;align-items:center;gap:8px;
+}
+.section-label::before{content:'◆';color:var(--stitch);font-size:8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== 스코어보드 (시그니처) ===== */
+.scoreboard{
+  background:linear-gradient(180deg,var(--field) 0%,var(--field-deep) 100%);
+  border-radius:var(--radius);
+  border:3px solid #08231A;
+  box-shadow:0 6px 0 #08231A, inset 0 0 0 1px rgba(245,180,10,.25);
+  padding:16px 14px 14px;
+  color:#fff;
+}
+.sb-title{
+  text-align:center;font-size:11px;letter-spacing:.3em;color:#9DB8AC;
+  border-bottom:1px solid rgba(255,255,255,.15);padding-bottom:8px;margin-bottom:12px;
+}
+.sb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sb-cell{text-align:center}
+.sb-val{
+  font-family:'Oswald',sans-serif;font-size:30px;font-weight:600;color:var(--amber);
+  line-height:1.1;
+  text-shadow:0 0 14px rgba(245,180,10,.45);
+  font-variant-numeric:tabular-nums;
+}
+.sb-key{font-size:11px;color:#9DB8AC;margin-top:3px;letter-spacing:.08em}
+.sb-sub{
+  display:flex;justify-content:center;gap:16px;margin-top:12px;padding-top:10px;
+  border-top:1px solid rgba(255,255,255,.15);font-size:12px;color:#CFE0D7;
+}
+.sb-sub b{color:#fff;font-family:'Oswald',sans-serif;font-weight:600;margin-left:4px}
+
+/* ===== 경기 카드 ===== */
+.game-card{margin-bottom:12px;overflow:hidden;padding:0}
+.game-head{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.result-chip{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Black Han Sans',sans-serif;font-size:18px;color:#fff;
+}
+.result-W{background:var(--field)} .result-L{background:var(--stitch)} .result-D{background:#8A8F89}
+.game-meta{flex:1;min-width:0}
+.game-vs{font-weight:700;font-size:15px}
+.game-date{font-size:12px;color:var(--muted);margin-top:2px}
+.game-line{font-family:'Oswald',sans-serif;font-size:14px;color:var(--ink);text-align:right;flex-shrink:0}
+.game-line .video-mark{color:var(--stitch);font-size:11px;display:block;font-family:'IBM Plex Sans KR',sans-serif}
+.game-body{border-top:1px dashed var(--line);padding:14px 16px;display:none}
+.game-card.open .game-body{display:block}
+.ab-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.ab-tag{
+  font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--paper);
+}
+.ab-tag.hit{border-color:var(--field);color:var(--field);font-weight:700;background:#EDF4F0}
+.ab-tag.hr{border-color:var(--stitch);color:var(--stitch);font-weight:700;background:#FBEDEF}
+.memo-box{
+  background:var(--paper);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;
+  padding:10px 12px;font-size:13px;line-height:1.6;margin:10px 0;white-space:pre-wrap;
+}
+.video-item{margin:10px 0}
+.video-item iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:10px;background:#000}
+.video-title{font-size:13px;font-weight:500;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.video-title::before{content:'▶';color:var(--stitch);font-size:10px}
+.video-link{font-size:13px;color:var(--field);text-decoration:underline;word-break:break-all}
+.game-actions{display:flex;gap:8px;margin-top:12px}
+.btn-sm{
+  font-size:12px;border-radius:8px;padding:7px 14px;border:1px solid var(--line);background:#fff;color:var(--ink);
+}
+.btn-sm.danger{color:var(--stitch);border-color:#EBC4CB}
+.pos-tags{font-size:12px;color:var(--muted);margin-bottom:8px}
+
+/* ===== 입력 폼 ===== */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-grid .full{grid-column:1/-1}
+label.f-label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
+input[type=text],input[type=date],input[type=number],input[type=url],textarea,select{
+  width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+  font-family:inherit;font-size:15px;background:#fff;color:var(--ink);
+}
+textarea{resize:vertical;min-height:72px;line-height:1.5}
+.seg{display:flex;gap:6px}
+.seg button{
+  flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 0;font-size:14px;font-weight:700;color:var(--muted);
+}
+.seg button.on-W{background:var(--field);border-color:var(--field);color:#fff}
+.seg button.on-L{background:var(--stitch);border-color:var(--stitch);color:#fff}
+.seg button.on-D{background:#8A8F89;border-color:#8A8F89;color:#fff}
+.chip-pool{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 13px;font-size:13px;color:var(--ink);
+}
+.chip:active{transform:scale(.96)}
+.chip.cat-hit{border-color:var(--field);color:var(--field);font-weight:700}
+.chip.cat-hr{border-color:var(--stitch);color:var(--stitch);font-weight:700}
+.ab-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:30px}
+.ab-pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:13px;background:var(--paper);
+  border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 12px;
+}
+.ab-pill .x{
+  width:18px;height:18px;border-radius:50%;border:0;background:var(--line);color:var(--ink);
+  font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;
+}
+.pos-pool .chip.sel{background:var(--field);border-color:var(--field);color:#fff;font-weight:700}
+.video-inputs .video-row{display:grid;grid-template-columns:1fr 2fr auto;gap:8px;margin-bottom:8px}
+.btn-add{border:1px dashed var(--line);background:var(--paper);border-radius:10px;padding:9px;width:100%;font-size:13px;color:var(--muted)}
+.btn-primary{
+  width:100%;background:var(--stitch);color:#fff;border:0;border-radius:12px;
+  font-family:'Black Han Sans',sans-serif;font-size:17px;padding:15px;margin-top:18px;
+  box-shadow:0 4px 0 #8E0B20;
+}
+.btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #8E0B20}
+.cancel-edit{width:100%;margin-top:10px;background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline}
+
+/* ===== 통계 ===== */
+.stat-table{width:100%;border-collapse:collapse;font-size:13px}
+.stat-table th{font-size:11px;color:var(--muted);font-weight:500;padding:6px 4px;border-bottom:2px solid var(--ink);text-align:center}
+.stat-table td{padding:8px 4px;text-align:center;border-bottom:1px solid var(--line);font-family:'Oswald',sans-serif;font-variant-numeric:tabular-nums}
+.stat-table td:first-child{font-family:'IBM Plex Sans KR',sans-serif;text-align:left;font-weight:500}
+.chart-wrap{overflow-x:auto}
+svg.chart{display:block;width:100%;height:170px}
+
+/* ===== 다이아몬드 ===== */
+.diamond-wrap{display:flex;align-items:center;gap:14px}
+.diamond-wrap svg{flex-shrink:0}
+.diamond-note{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* ===== 빈 화면 ===== */
+.empty{
+  text-align:center;padding:40px 16px;color:var(--muted);font-size:14px;line-height:1.7;
+}
+.empty .ball{font-size:34px;display:block;margin-bottom:10px}
+
+/* ===== 하단 탭 ===== */
+nav.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  background:#fff;border-top:1px solid var(--line);
+  display:flex;justify-content:space-around;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+}
+.tabbar button{
+  background:none;border:0;flex:1;max-width:130px;
+  font-size:11px;color:var(--muted);padding:6px 0;border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:500;
+}
+.tabbar button .ic{font-size:19px;line-height:1}
+.tabbar button.active{color:var(--stitch);font-weight:700}
+.view{display:none}
+.view.active{display:block}
+
+/* ===== 토스트/배너 ===== */
+#toast{
+  position:fixed;left:50%;bottom:96px;transform:translateX(-50%);
+  background:var(--ink);color:#fff;font-size:13px;padding:10px 18px;border-radius:999px;
+  opacity:0;pointer-events:none;transition:opacity .25s;z-index:99;white-space:nowrap;
+}
+#toast.show{opacity:1}
+.banner{
+  background:#FFF6DE;border:1px solid #EAD79A;color:#7A5C00;font-size:12px;
+  border-radius:10px;padding:9px 12px;margin-bottom:14px;line-height:1.5;display:none;
+}
+.banner.ok{background:#EAF4EE;border-color:#BFD9CB;color:#1E5C42}
+
+/* ===== 설정 모달 ===== */
+dialog{
+  border:0;border-radius:16px;padding:0;max-width:340px;width:calc(100% - 40px);
+  box-shadow:0 20px 50px rgba(0,0,0,.3);
+}
+dialog::backdrop{background:rgba(14,59,44,.5)}
+.dlg-inner{padding:20px}
+.dlg-inner h3{font-size:18px;margin-bottom:14px}
+.dlg-inner .f-label{margin-top:10px}
+.dlg-actions{display:flex;gap:8px;margin-top:18px}
+.dlg-actions button{flex:1;border-radius:10px;padding:11px;font-size:14px;border:1px solid var(--line);background:#fff}
+.dlg-actions .save{background:var(--field);border-color:var(--field);color:#fff;font-weight:700}
+
+@media (min-width:640px){
+  .sb-val{font-size:38px}
+  .player-name{font-size:26px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div class="player-id">
+      <div class="player-no num" id="hNo">29</div>
+      <div style="min-width:0">
+        <div class="player-name" id="hName">이윤우</div>
+        <div class="player-team" id="hTeam">송파리틀</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;flex-shrink:0">
+      <button class="edit-btn" id="syncBtn" style="display:none" onclick="syncNow()">↻ 동기화</button>
+      <button class="edit-btn" onclick="openSettings()">선수 정보</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="banner" id="storageBanner">
+    이 환경에서는 저장소를 사용할 수 없어 기록이 브라우저를 닫으면 사라집니다. Claude 앱에서 열면 가족과 함께 기록이 유지됩니다.
+  </div>
+
+  <!-- ============ 홈 ============ -->
+  <section class="view active" id="view-home">
+    <div class="scoreboard">
+      <div class="sb-title">SEASON SCOREBOARD · <span id="sbYear"></span></div>
+      <div class="sb-grid">
+        <div class="sb-cell"><div class="sb-val" id="sAvg">.000</div><div class="sb-key">타율</div></div>
+        <div class="sb-cell"><div class="sb-val" id="sHits">0</div><div class="sb-key">안타</div></div>
+        <div class="sb-cell"><div class="sb-val" id="sHr">0</div><div class="sb-key">홈런</div></div>
+        <div class="sb-cell"><div class="sb-val" id="sRbi">0</div><div class="sb-key">타점</div></div>
+      </div>
+      <div class="sb-sub">
+        <span>경기<b id="sGames">0</b></span>
+        <span>출루율<b id="sObp">.000</b></span>
+        <span>OPS<b id="sOps">.000</b></span>
+      </div>
+    </div>
+
+    <div class="section-label">최근 경기</div>
+    <div id="recentGames"></div>
+
+    <div class="section-label">주요 수비 포지션</div>
+    <div class="card diamond-wrap">
+      <svg id="diamondSvg" width="150" height="135" viewBox="0 0 150 135" aria-label="수비 포지션 다이아몬드"></svg>
+      <div class="diamond-note" id="diamondNote">경기 기록이 쌓이면 자주 선 포지션이 다이아몬드 위에 표시됩니다.</div>
+    </div>
+  </section>
+
+  <!-- ============ 경기 목록 ============ -->
+  <section class="view" id="view-games">
+    <div class="section-label">전체 경기 기록</div>
+    <div id="gameList"></div>
+  </section>
+
+  <!-- ============ 입력 ============ -->
+  <section class="view" id="view-input">
+    <div class="section-label" id="inputTitle">새 경기 기록</div>
+    <div class="card">
+      <div class="form-grid">
+        <div>
+          <label class="f-label" for="fDate">경기 날짜</label>
+          <input type="date" id="fDate">
+        </div>
+        <div>
+          <label class="f-label" for="fOpp">상대팀</label>
+          <input type="text" id="fOpp" placeholder="예: 강동 리틀">
+        </div>
+        <div class="full">
+          <label class="f-label" for="fPlace">구장</label>
+          <input type="text" id="fPlace" placeholder="예: 잠실 리틀야구장">
+        </div>
+        <div>
+          <label class="f-label">경기 결과</label>
+          <div class="seg" id="resultSeg">
+            <button type="button" data-r="W" onclick="setResult('W')">승</button>
+            <button type="button" data-r="L" onclick="setResult('L')">패</button>
+            <button type="button" data-r="D" onclick="setResult('D')">무</button>
+          </div>
+        </div>
+        <div>
+          <label class="f-label">스코어 (우리팀 : 상대)</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="number" id="fScoreUs" min="0" inputmode="numeric" placeholder="0">
+            <span>:</span>
+            <input type="number" id="fScoreThem" min="0" inputmode="numeric" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:20px">타석 기록 <span style="color:var(--muted);font-weight:400;letter-spacing:0">— 순서대로 탭</span></div>
+      <div class="chip-pool" id="abChips"></div>
+      <div class="ab-list" id="abList"></div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div>
+          <label class="f-label" for="fRbi">타점</label>
+          <input type="number" id="fRbi" min="0" inputmode="numeric" placeholder="0">
+        </div>
+        <div>
+          <label class="f-label" for="fRuns">득점</label>
+          <input type="number" id="fRuns" min="0" inputmode="numeric" placeholder="0">
+        </div>
+        <div>
+          <label class="f-label" for="fSb">도루</label>
+          <input type="number" id="fSb" min="0" inputmode="numeric" placeholder="0">
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:20px">수비 포지션 <span style="color:var(--muted);font-weight:400;letter-spacing:0">— 복수 선택</span></div>
+      <div class="chip-pool pos-pool" id="posChips"></div>
+
+      <div class="section-label" style="margin-top:20px">영상 링크</div>
+      <div class="video-inputs" id="videoInputs"></div>
+      <button type="button" class="btn-add" onclick="addVideoRow()">＋ 영상 링크 추가 (유튜브 권장)</button>
+
+      <div style="margin-top:16px">
+        <label class="f-label" for="fMemo">경기 메모</label>
+        <textarea id="fMemo" placeholder="오늘 컨디션, 코치님 코멘트, 기억하고 싶은 장면..."></textarea>
+      </div>
+
+      <button class="btn-primary" id="saveBtn" onclick="saveGame()">경기 기록 저장</button>
+      <button class="cancel-edit" id="cancelEditBtn" style="display:none" onclick="resetForm()">수정 취소</button>
+    </div>
+  </section>
+
+  <!-- ============ 통계 ============ -->
+  <section class="view" id="view-stats">
+    <div class="section-label">시즌 누적 기록</div>
+    <div class="card" style="overflow-x:auto">
+      <table class="stat-table" id="totalTable"></table>
+    </div>
+    <div class="section-label">경기별 누적 타율 추이</div>
+    <div class="card chart-wrap"><svg class="chart" id="avgChart"></svg></div>
+    <div class="section-label">월별 기록</div>
+    <div class="card" style="overflow-x:auto">
+      <table class="stat-table" id="monthTable"></table>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar" aria-label="메뉴">
+  <button class="active" data-v="home" onclick="go('home')"><span class="ic">⌂</span>홈</button>
+  <button data-v="games" onclick="go('games')"><span class="ic">⚾</span>경기</button>
+  <button data-v="input" onclick="go('input')"><span class="ic">✎</span>입력</button>
+  <button data-v="stats" onclick="go('stats')"><span class="ic">▦</span>통계</button>
+</nav>
+
+<div id="toast" role="status"></div>
+
+<dialog id="settingsDlg">
+  <div class="dlg-inner">
+    <h3>선수 정보</h3>
+    <label class="f-label" for="setName">선수 이름</label>
+    <input type="text" id="setName" placeholder="예: 김야구">
+    <label class="f-label" for="setNo">등번호</label>
+    <input type="number" id="setNo" min="0" inputmode="numeric" placeholder="7">
+    <label class="f-label" for="setTeam">소속팀</label>
+    <input type="text" id="setTeam" placeholder="예: 잠실 리틀야구단">
+    <div class="dlg-actions">
+      <button onclick="document.getElementById('settingsDlg').close()">취소</button>
+      <button class="save" onclick="saveSettings()">저장</button>
+    </div>
+    <div style="border-top:1px dashed var(--line);margin-top:16px;padding-top:14px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">구글시트 자동 동기화 (가족 실시간 공유)</div>
+      <input type="url" id="setSheetUrl" placeholder="Apps Script 배포 URL (…/exec)">
+      <div class="dlg-actions" style="margin-top:8px">
+        <button onclick="disconnectSheet()">해제</button>
+        <button class="save" onclick="connectSheet()">연결</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5">
+        설치 방법은 함께 받은 <b>구글시트 연동 가이드</b>를 참고하세요. (5분 소요, 1회만)
+      </div>
+    </div>
+    <div style="border-top:1px dashed var(--line);margin-top:14px;padding-top:14px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">백업 (파일)</div>
+      <div class="dlg-actions" style="margin-top:0">
+        <button onclick="exportData()">⬇ 데이터 내보내기</button>
+        <button onclick="document.getElementById('importFile').click()">⬆ 가져오기</button>
+      </div>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none"
+        onchange="if(this.files[0]){importData(this.files[0]);this.value='';}">
+    </div>
+  </div>
+</dialog>
+
+<script>
+/* ================= 데이터 ================= */
+const AB_TYPES = [
+  {k:'안타', cat:'hit'},{k:'2루타', cat:'hit'},{k:'3루타', cat:'hit'},{k:'홈런', cat:'hr'},
+  {k:'볼넷'},{k:'사구'},{k:'삼진'},{k:'땅볼 아웃'},{k:'뜬공 아웃'},{k:'희생타'},{k:'야수선택/실책'}
+];
+const HITS = ['안타','2루타','3루타','홈런'];
+const NO_AB = ['볼넷','사구','희생타'];                 // 타수 제외
+const POSITIONS = ['투수','포수','1루수','2루수','3루수','유격수','좌익수','중견수','우익수','지명타자'];
+const POS_XY = {  /* 다이아몬드 좌표 (viewBox 150x135) */
+  '투수':[75,82],'포수':[75,118],'1루수':[107,76],'2루수':[93,55],'3루수':[43,76],
+  '유격수':[57,55],'좌익수':[32,32],'중견수':[75,20],'우익수':[118,32],'지명타자':[20,115]
+};
+const STORE_KEY = 'baseball-log-v1';
+const SHEET_URL_KEY = 'baseball-sheet-url';
+
+let state = { settings:{name:'이윤우', no:'29', team:'송파리틀'}, games:[] };
+let storeMode = 'none';   // 'sheet' | 'cloud' | 'local' | 'none'
+let sheetUrl = '';
+let lastSync = null;
+let draftABs = [];      // 입력 중 타석
+let draftPos = [];      // 입력 중 포지션
+let editingId = null;
+
+/* ================= 저장소 =================
+   1순위: 구글시트 자동 동기화(sheet) — 가족 모두 같은 기록, 실시간 공유
+   2순위: Claude 아티팩트 공유 저장소(cloud)
+   3순위: 브라우저 localStorage(local) — 이 기기에만 저장 */
+function localAvailable(){
+  try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return true; }
+  catch(e){ return false; }
+}
+function cacheLocal(){
+  if(localAvailable()){
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+}
+async function loadState(){
+  if(localAvailable()) sheetUrl = localStorage.getItem(SHEET_URL_KEY) || '';
+  if(sheetUrl){
+    storeMode = 'sheet';
+    /* 기기 캐시 먼저 보여주고 시트에서 최신본 가져오기 */
+    try{
+      const raw = localAvailable() ? localStorage.getItem(STORE_KEY) : null;
+      if(raw) state = JSON.parse(raw);
+    }catch(e){}
+    await pullFromSheet(false);
+  } else if(window.storage){
+    storeMode = 'cloud';
+    try{
+      const r = await window.storage.get(STORE_KEY, true);
+      if(r && r.value) state = JSON.parse(r.value);
+    }catch(e){ /* 키가 없으면 첫 사용 — 정상 */ }
+  } else if(localAvailable()){
+    storeMode = 'local';
+    try{
+      const raw = localStorage.getItem(STORE_KEY);
+      if(raw) state = JSON.parse(raw);
+    }catch(e){}
+  } else {
+    storeMode = 'none';
+  }
+  updateBanner();
+}
+function updateBanner(){
+  const b = document.getElementById('storageBanner');
+  const syncBtn = document.getElementById('syncBtn');
+  syncBtn.style.display = storeMode==='sheet' ? '' : 'none';
+  if(storeMode==='sheet'){
+    b.className = 'banner ok';
+    const t = lastSync ? lastSync.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : '—';
+    b.innerHTML = `구글시트 자동 동기화 중 ✓ 가족 모두 같은 기록을 봅니다 · 마지막 동기화 ${t}`;
+    b.style.display='block';
+  } else if(storeMode==='local'){
+    b.className = 'banner';
+    b.innerHTML = '기록은 <b>이 기기에만</b> 저장됩니다. <b>선수 정보 → 구글시트 자동 동기화</b>를 연결하면 가족이 실시간으로 함께 기록할 수 있어요.';
+    b.style.display='block';
+  } else if(storeMode==='none'){
+    b.className = 'banner';
+    b.innerHTML = '이 환경에서는 저장소를 사용할 수 없어 화면을 닫으면 기록이 사라집니다. <b>데이터 내보내기</b>로 파일을 보관해 주세요.';
+    b.style.display='block';
+  } else {
+    b.style.display='none';
+  }
+}
+function setSyncing(on){
+  const btn = document.getElementById('syncBtn');
+  btn.textContent = on ? '… 동기화중' : '↻ 동기화';
+  btn.disabled = !!on;
+}
+async function pullFromSheet(notify){
+  if(!sheetUrl) return false;
+  try{
+    setSyncing(true);
+    const res = await fetch(sheetUrl, {method:'GET'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const remoteGames = (data && Array.isArray(data.games)) ? data.games : [];
+    if(remoteGames.length===0 && state.games.length>0){
+      /* 시트가 비어있고 기기에 기록이 있으면 → 기기 기록을 시트로 올림 (실수 덮어쓰기 방지) */
+      await pushToSheet();
+    } else if(data && Array.isArray(data.games)){
+      state = data;
+      if(!state.settings) state.settings = {name:'이윤우', no:'29', team:'송파리틀'};
+    }
+    cacheLocal();
+    lastSync = new Date();
+    updateBanner();
+    if(notify) toast('동기화 완료 ⚾');
+    setSyncing(false);
+    return true;
+  }catch(e){
+    setSyncing(false);
+    if(notify) toast('동기화 실패 — 인터넷 또는 시트 설정을 확인해 주세요');
+    return false;
+  }
+}
+async function pushToSheet(){
+  const res = await fetch(sheetUrl, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(state)
+  });
+  if(!res.ok) throw new Error('HTTP '+res.status);
+}
+async function syncNow(){
+  const ok = await pullFromSheet(true);
+  if(ok) render();
+}
+async function persist(){
+  cacheLocal();
+  try{
+    if(storeMode==='sheet'){
+      setSyncing(true);
+      await pushToSheet();
+      lastSync = new Date();
+      updateBanner();
+      setSyncing(false);
+    }
+    else if(storeMode==='cloud') await window.storage.set(STORE_KEY, JSON.stringify(state), true);
+    else if(storeMode==='local') localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  }catch(e){
+    setSyncing(false);
+    if(storeMode==='sheet') toast('시트 전송 실패 — 기기에는 저장됨. 인터넷 연결 후 다시 저장해 주세요.');
+    else toast('저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+  }
+}
+
+/* ================= 구글시트 연결/해제 ================= */
+async function connectSheet(){
+  const url = document.getElementById('setSheetUrl').value.trim();
+  if(!/^https:\/\/script\.google(usercontent)?\.com\/.+/.test(url)){
+    toast('Apps Script 배포 URL(…/exec)을 입력해 주세요'); return;
+  }
+  toast('연결 확인 중…');
+  try{
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    sheetUrl = url;
+    if(localAvailable()) localStorage.setItem(SHEET_URL_KEY, url);
+    storeMode = 'sheet';
+    const remoteGames = (data && Array.isArray(data.games)) ? data.games : [];
+    if(remoteGames.length){
+      /* 시트에 이미 기록이 있으면: 시트 기록 + 이 기기에만 있던 경기를 합침 */
+      const ids = new Set(remoteGames.map(g=>g.id));
+      const localOnly = state.games.filter(g=>!ids.has(g.id));
+      const mySettings = state.settings;
+      state = data;
+      if(localOnly.length) state.games.push(...localOnly);
+      if(!state.settings || !state.settings.name) state.settings = mySettings;
+    }
+    await persist();   /* 합친 결과를 시트에 반영 */
+    lastSync = new Date();
+    updateBanner(); render();
+    document.getElementById('settingsDlg').close();
+    toast('구글시트 연동 완료 ⚾ 가족 모두 같은 기록을 봅니다');
+  }catch(e){
+    toast('연결 실패 — URL과 배포 설정(액세스: 모든 사용자)을 확인해 주세요');
+  }
+}
+function disconnectSheet(){
+  if(!sheetUrl){ toast('연동된 시트가 없습니다'); return; }
+  if(!confirm('구글시트 연동을 해제할까요?\n기록은 시트와 이 기기에 그대로 남습니다.')) return;
+  sheetUrl = '';
+  if(localAvailable()) localStorage.removeItem(SHEET_URL_KEY);
+  storeMode = window.storage ? 'cloud' : (localAvailable() ? 'local' : 'none');
+  updateBanner();
+  toast('연동을 해제했습니다');
+}
+/* 다른 가족이 기록했을 수 있으니, 화면에 다시 돌아오면 자동으로 최신본 확인 */
+document.addEventListener('visibilitychange', async ()=>{
+  if(!document.hidden && storeMode==='sheet'){
+    const ok = await pullFromSheet(false);
+    if(ok) render();
+  }
+});
+
+/* ================= 내보내기 / 가져오기 ================= */
+function exportData(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const d = new Date().toISOString().slice(0,10);
+  a.download = `야구기록_${state.settings.name||'선수'}_${d}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('기록 파일을 내려받았습니다');
+}
+function importData(file){
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try{
+      const data = JSON.parse(reader.result);
+      if(!data || !Array.isArray(data.games)) throw new Error('형식 오류');
+      const merge = state.games.length
+        ? confirm(`현재 기기에 경기 ${state.games.length}건이 있습니다.\n[확인] 합치기(중복 제외) / [취소] 가져온 파일로 전부 교체`)
+        : false;
+      if(merge){
+        const ids = new Set(state.games.map(g=>g.id));
+        data.games.forEach(g=>{ if(!ids.has(g.id)) state.games.push(g); });
+        if(data.settings) state.settings = data.settings;
+      } else {
+        state = data;
+      }
+      await persist(); render();
+      document.getElementById('settingsDlg').close();
+      toast(`기록 ${state.games.length}건을 불러왔습니다 ⚾`);
+    }catch(e){ toast('파일을 읽을 수 없습니다. 내보내기로 만든 .json 파일인지 확인해 주세요.'); }
+  };
+  reader.readAsText(file);
+}
+
+/* ================= 통계 계산 ================= */
+function gameStats(g){
+  const abs = g.atBats||[];
+  const h = abs.filter(a=>HITS.includes(a)).length;
+  const ab = abs.filter(a=>!NO_AB.includes(a)).length;
+  const bb = abs.filter(a=>a==='볼넷').length;
+  const hbp = abs.filter(a=>a==='사구').length;
+  const sf = abs.filter(a=>a==='희생타').length;
+  const hr = abs.filter(a=>a==='홈런').length;
+  const tb = abs.reduce((t,a)=>t+({'안타':1,'2루타':2,'3루타':3,'홈런':4}[a]||0),0);
+  return {h,ab,bb,hbp,sf,hr,tb,pa:abs.length,rbi:+(g.rbi||0),runs:+(g.runs||0),sb:+(g.sb||0)};
+}
+function sumStats(games){
+  const t = {h:0,ab:0,bb:0,hbp:0,sf:0,hr:0,tb:0,pa:0,rbi:0,runs:0,sb:0};
+  games.forEach(g=>{const s=gameStats(g);for(const k in t)t[k]+=s[k];});
+  t.avg = t.ab? t.h/t.ab : 0;
+  t.obp = (t.ab+t.bb+t.hbp+t.sf)? (t.h+t.bb+t.hbp)/(t.ab+t.bb+t.hbp+t.sf) : 0;
+  t.slg = t.ab? t.tb/t.ab : 0;
+  t.ops = t.obp+t.slg;
+  return t;
+}
+const f3 = v => (v>=1? v.toFixed(3) : v.toFixed(3).replace(/^0/,''));
+
+/* ================= 렌더링 ================= */
+function sortedGames(){ return [...state.games].sort((a,b)=> (b.date||'').localeCompare(a.date||'')); }
+
+function render(){
+  renderHeader(); renderHome(); renderGameList(); renderStats();
+}
+function renderHeader(){
+  document.getElementById('hName').textContent = state.settings.name || '이윤우';
+  document.getElementById('hNo').textContent = state.settings.no || '·';
+  document.getElementById('hTeam').textContent = state.settings.team || '';
+}
+function renderHome(){
+  const t = sumStats(state.games);
+  document.getElementById('sbYear').textContent = new Date().getFullYear();
+  document.getElementById('sAvg').textContent = f3(t.avg);
+  document.getElementById('sHits').textContent = t.h;
+  document.getElementById('sHr').textContent = t.hr;
+  document.getElementById('sRbi').textContent = t.rbi;
+  document.getElementById('sGames').textContent = state.games.length;
+  document.getElementById('sObp').textContent = f3(t.obp);
+  document.getElementById('sOps').textContent = f3(t.ops);
+
+  const recent = sortedGames().slice(0,3);
+  document.getElementById('recentGames').innerHTML =
+    recent.length ? recent.map(gameCardHTML).join('') :
+    `<div class="card empty"><span class="ball">⚾</span>아직 기록된 경기가 없습니다.<br>아래 <b>입력</b> 탭에서 첫 경기를 기록해 보세요!</div>`;
+  renderDiamond();
+}
+function renderDiamond(){
+  const count = {};
+  state.games.forEach(g=>(g.positions||[]).forEach(p=>count[p]=(count[p]||0)+1));
+  const max = Math.max(1,...Object.values(count));
+  let svg = `<polygon points="75,118 117,76 75,34 33,76" fill="#EDE8DA" stroke="#C9C2AE"/>
+    <line x1="75" y1="118" x2="20" y2="60" stroke="#C9C2AE" stroke-dasharray="3 3"/>
+    <line x1="75" y1="118" x2="130" y2="60" stroke="#C9C2AE" stroke-dasharray="3 3"/>`;
+  POSITIONS.forEach(p=>{
+    const c = count[p]||0; if(!POS_XY[p]) return;
+    const [x,y]=POS_XY[p];
+    const r = c? 6+8*(c/max) : 3;
+    svg += `<circle cx="${x}" cy="${y}" r="${r}" fill="${c?'var(--stitch)':'#D8D3C4'}" opacity="${c?0.9:0.7}"/>`;
+    if(c) svg += `<text x="${x}" y="${y+3}" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">${c}</text>`;
+  });
+  document.getElementById('diamondSvg').innerHTML = svg;
+  const top = Object.entries(count).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  document.getElementById('diamondNote').innerHTML = top.length
+    ? '가장 많이 선 포지션:<br>' + top.map(([p,c])=>`<b>${p}</b> ${c}경기`).join(' · ')
+    : '경기 기록이 쌓이면 자주 선 포지션이 다이아몬드 위에 표시됩니다.';
+}
+function gameCardHTML(g){
+  const s = gameStats(g);
+  const line = s.pa ? `${s.h}안타 / ${s.ab}타수` : '타석 기록 없음';
+  const score = (g.scoreUs!==''&&g.scoreUs!=null) ? ` ${g.scoreUs}:${g.scoreThem}` : '';
+  return `<div class="card game-card" id="g-${g.id}">
+    <div class="game-head" onclick="toggleGame('${g.id}')" role="button" tabindex="0"
+         onkeydown="if(event.key==='Enter')toggleGame('${g.id}')">
+      <div class="result-chip result-${g.result||'D'}">${{W:'승',L:'패',D:'무'}[g.result]||'무'}</div>
+      <div class="game-meta">
+        <div class="game-vs">vs ${esc(g.opponent||'상대팀')}${score}</div>
+        <div class="game-date">${g.date||''}${g.place? ' · '+esc(g.place):''}</div>
+      </div>
+      <div class="game-line num">${line}${(g.videos||[]).length?`<span class="video-mark">▶ 영상 ${g.videos.length}</span>`:''}</div>
+    </div>
+    <div class="game-body">${gameBodyHTML(g)}</div>
+  </div>`;
+}
+function gameBodyHTML(g){
+  let html = '';
+  if((g.positions||[]).length) html += `<div class="pos-tags">수비: ${g.positions.map(esc).join(', ')}</div>`;
+  if((g.atBats||[]).length){
+    html += `<div class="ab-row">` + g.atBats.map((a,i)=>{
+      const cls = a==='홈런'?'hr':(HITS.includes(a)?'hit':'');
+      return `<span class="ab-tag ${cls}">${i+1}타석 ${a}</span>`;
+    }).join('') + `</div>`;
+  }
+  const s = gameStats(g);
+  const extra = [];
+  if(s.rbi) extra.push(`타점 ${s.rbi}`);
+  if(s.runs) extra.push(`득점 ${s.runs}`);
+  if(s.sb) extra.push(`도루 ${s.sb}`);
+  if(extra.length) html += `<div class="pos-tags">${extra.join(' · ')}</div>`;
+  if(g.memo) html += `<div class="memo-box">${esc(g.memo)}</div>`;
+  (g.videos||[]).forEach(v=>{
+    const emb = ytEmbed(v.url);
+    html += `<div class="video-item"><div class="video-title">${esc(v.title||'경기 영상')}</div>` +
+      (emb ? `<iframe src="${emb}" allowfullscreen loading="lazy" title="${esc(v.title||'경기 영상')}"></iframe>`
+           : `<a class="video-link" href="${escAttr(v.url)}" target="_blank" rel="noopener">${esc(v.url)}</a>`) + `</div>`;
+  });
+  html += `<div class="game-actions">
+    <button class="btn-sm" onclick="editGame('${g.id}')">수정</button>
+    <button class="btn-sm danger" onclick="deleteGame('${g.id}')">삭제</button>
+  </div>`;
+  return html;
+}
+function toggleGame(id){
+  document.querySelectorAll(`[id="g-${id}"]`).forEach(el=>el.classList.toggle('open'));
+}
+function renderGameList(){
+  const list = sortedGames();
+  document.getElementById('gameList').innerHTML =
+    list.length ? list.map(gameCardHTML).join('') :
+    `<div class="card empty"><span class="ball">⚾</span>기록된 경기가 없습니다.</div>`;
+}
+
+/* ================= 통계 화면 ================= */
+function renderStats(){
+  const t = sumStats(state.games);
+  document.getElementById('totalTable').innerHTML = `
+    <tr><th>경기</th><th>타석</th><th>타수</th><th>안타</th><th>홈런</th><th>타점</th><th>득점</th><th>도루</th><th>볼넷</th><th>삼진</th><th>타율</th><th>출루율</th><th>장타율</th><th>OPS</th></tr>
+    <tr><td style="text-align:center;font-family:'Oswald'">${state.games.length}</td><td>${t.pa}</td><td>${t.ab}</td><td>${t.h}</td><td>${t.hr}</td><td>${t.rbi}</td><td>${t.runs}</td><td>${t.sb}</td><td>${t.bb}</td>
+    <td>${countAll('삼진')}</td><td>${f3(t.avg)}</td><td>${f3(t.obp)}</td><td>${f3(t.slg)}</td><td>${f3(t.ops)}</td></tr>`;
+  renderAvgChart();
+  renderMonthTable();
+}
+function countAll(type){
+  return state.games.reduce((n,g)=>n+(g.atBats||[]).filter(a=>a===type).length,0);
+}
+function renderAvgChart(){
+  const svg = document.getElementById('avgChart');
+  const games = [...state.games].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  if(games.length<2){ svg.innerHTML=`<text x="50%" y="55%" text-anchor="middle" font-size="12" fill="#8a8a8a">경기가 2개 이상 쌓이면 추이가 표시됩니다</text>`; return; }
+  let cumH=0, cumAB=0;
+  const pts = games.map(g=>{ const s=gameStats(g); cumH+=s.h; cumAB+=s.ab; return cumAB? cumH/cumAB : 0; });
+  const W=600,H=170,P=28;
+  const maxV = Math.max(0.5, ...pts);
+  const x = i => P + i*(W-P*2)/(pts.length-1);
+  const y = v => H-P - v*(H-P*2)/maxV;
+  let path = pts.map((v,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+  let dots = pts.map((v,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.5" fill="var(--stitch)"/>`).join('');
+  const grid = [0.2,0.4].filter(v=>v<=maxV).map(v=>
+    `<line x1="${P}" x2="${W-P}" y1="${y(v)}" y2="${y(v)}" stroke="#E4E0D2"/>
+     <text x="${P-5}" y="${y(v)+3}" text-anchor="end" font-size="9" fill="#9a9a8d">${f3(v)}</text>`).join('');
+  const last = pts[pts.length-1];
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.innerHTML = grid +
+    `<path d="${path}" fill="none" stroke="var(--field)" stroke-width="2.5" stroke-linejoin="round"/>` + dots +
+    `<text x="${x(pts.length-1)}" y="${y(last)-9}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--stitch)">${f3(last)}</text>`;
+}
+function renderMonthTable(){
+  const byMonth = {};
+  state.games.forEach(g=>{
+    const m = (g.date||'').slice(0,7) || '날짜 미상';
+    (byMonth[m] = byMonth[m]||[]).push(g);
+  });
+  const months = Object.keys(byMonth).sort().reverse();
+  if(!months.length){ document.getElementById('monthTable').innerHTML = `<tr><td class="empty">기록 없음</td></tr>`; return; }
+  let rows = `<tr><th style="text-align:left">월</th><th>경기</th><th>안타</th><th>홈런</th><th>타점</th><th>타율</th></tr>`;
+  months.forEach(m=>{
+    const t = sumStats(byMonth[m]);
+    rows += `<tr><td>${m}</td><td>${byMonth[m].length}</td><td>${t.h}</td><td>${t.hr}</td><td>${t.rbi}</td><td>${f3(t.avg)}</td></tr>`;
+  });
+  document.getElementById('monthTable').innerHTML = rows;
+}
+
+/* ================= 입력 폼 ================= */
+function initChips(){
+  document.getElementById('abChips').innerHTML = AB_TYPES.map(t=>
+    `<button type="button" class="chip ${t.cat?'cat-'+t.cat:''}" onclick="addAB('${t.k}')">${t.k}</button>`).join('');
+  document.getElementById('posChips').innerHTML = POSITIONS.map(p=>
+    `<button type="button" class="chip" data-p="${p}" onclick="togglePos('${p}')">${p}</button>`).join('');
+}
+function addAB(k){ draftABs.push(k); renderDraftABs(); }
+function removeAB(i){ draftABs.splice(i,1); renderDraftABs(); }
+function renderDraftABs(){
+  document.getElementById('abList').innerHTML = draftABs.map((a,i)=>
+    `<span class="ab-pill">${i+1}타석 ${a}<button type="button" class="x" aria-label="삭제" onclick="removeAB(${i})">✕</button></span>`).join('')
+    || `<span style="font-size:12px;color:var(--muted)">위 버튼을 눌러 타석 결과를 순서대로 추가하세요</span>`;
+}
+function togglePos(p){
+  const i = draftPos.indexOf(p);
+  i>=0 ? draftPos.splice(i,1) : draftPos.push(p);
+  document.querySelectorAll('#posChips .chip').forEach(el=>
+    el.classList.toggle('sel', draftPos.includes(el.dataset.p)));
+}
+function setResult(r){
+  document.querySelectorAll('#resultSeg button').forEach(b=>{
+    b.className = ''; if(b.dataset.r===r) b.classList.add('on-'+r);
+  });
+  document.getElementById('resultSeg').dataset.val = r;
+}
+function addVideoRow(title='', url=''){
+  const div = document.createElement('div');
+  div.className='video-row';
+  div.innerHTML = `<input type="text" placeholder="제목 (예: 3회 2루타)" value="${escAttr(title)}">
+    <input type="url" placeholder="https://youtu.be/..." value="${escAttr(url)}">
+    <button type="button" class="btn-sm danger" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('videoInputs').appendChild(div);
+}
+function collectVideos(){
+  return [...document.querySelectorAll('#videoInputs .video-row')].map(r=>{
+    const [t,u] = r.querySelectorAll('input');
+    return {title:t.value.trim(), url:u.value.trim()};
+  }).filter(v=>v.url);
+}
+function resetForm(){
+  editingId = null; draftABs=[]; draftPos=[];
+  document.getElementById('inputTitle').firstChild.textContent = '새 경기 기록';
+  document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
+  ['fOpp','fPlace','fScoreUs','fScoreThem','fRbi','fRuns','fSb','fMemo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('videoInputs').innerHTML='';
+  document.getElementById('resultSeg').dataset.val='';
+  setResult('');
+  renderDraftABs();
+  document.querySelectorAll('#posChips .chip').forEach(el=>el.classList.remove('sel'));
+  document.getElementById('cancelEditBtn').style.display='none';
+  document.getElementById('saveBtn').textContent='경기 기록 저장';
+}
+async function saveGame(){
+  const date = document.getElementById('fDate').value;
+  const opp = document.getElementById('fOpp').value.trim();
+  if(!date){ toast('경기 날짜를 입력해 주세요'); return; }
+  if(!opp){ toast('상대팀을 입력해 주세요'); return; }
+  const g = {
+    id: editingId || ('g'+Date.now()),
+    date, opponent:opp,
+    place: document.getElementById('fPlace').value.trim(),
+    result: document.getElementById('resultSeg').dataset.val || 'D',
+    scoreUs: document.getElementById('fScoreUs').value,
+    scoreThem: document.getElementById('fScoreThem').value,
+    atBats: [...draftABs],
+    rbi: document.getElementById('fRbi').value,
+    runs: document.getElementById('fRuns').value,
+    sb: document.getElementById('fSb').value,
+    positions: [...draftPos],
+    videos: collectVideos(),
+    memo: document.getElementById('fMemo').value.trim()
+  };
+  if(editingId){
+    const i = state.games.findIndex(x=>x.id===editingId);
+    if(i>=0) state.games[i]=g; else state.games.push(g);
+  } else state.games.push(g);
+  await persist();
+  resetForm(); render(); go('games');
+  toast('경기 기록이 저장됐습니다 ⚾');
+}
+function editGame(id){
+  const g = state.games.find(x=>x.id===id); if(!g) return;
+  resetForm();
+  editingId = id;
+  document.getElementById('fDate').value = g.date||'';
+  document.getElementById('fOpp').value = g.opponent||'';
+  document.getElementById('fPlace').value = g.place||'';
+  setResult(g.result||'');
+  document.getElementById('resultSeg').dataset.val = g.result||'';
+  document.getElementById('fScoreUs').value = g.scoreUs??'';
+  document.getElementById('fScoreThem').value = g.scoreThem??'';
+  draftABs = [...(g.atBats||[])]; renderDraftABs();
+  document.getElementById('fRbi').value = g.rbi||'';
+  document.getElementById('fRuns').value = g.runs||'';
+  document.getElementById('fSb').value = g.sb||'';
+  draftPos = [...(g.positions||[])];
+  document.querySelectorAll('#posChips .chip').forEach(el=>el.classList.toggle('sel', draftPos.includes(el.dataset.p)));
+  (g.videos||[]).forEach(v=>addVideoRow(v.title,v.url));
+  document.getElementById('fMemo').value = g.memo||'';
+  document.getElementById('saveBtn').textContent='수정 내용 저장';
+  document.getElementById('cancelEditBtn').style.display='block';
+  go('input');
+  window.scrollTo({top:0});
+}
+async function deleteGame(id){
+  if(!confirm('이 경기 기록을 삭제할까요? 되돌릴 수 없습니다.')) return;
+  state.games = state.games.filter(g=>g.id!==id);
+  await persist(); render();
+  toast('삭제했습니다');
+}
+
+/* ================= 설정 ================= */
+function openSettings(){
+  document.getElementById('setName').value = state.settings.name||'';
+  document.getElementById('setNo').value = state.settings.no||'';
+  document.getElementById('setTeam').value = state.settings.team||'';
+  document.getElementById('setSheetUrl').value = sheetUrl||'';
+  document.getElementById('settingsDlg').showModal();
+}
+async function saveSettings(){
+  state.settings = {
+    name: document.getElementById('setName').value.trim() || '이윤우',
+    no: document.getElementById('setNo').value || '',
+    team: document.getElementById('setTeam').value.trim() || ''
+  };
+  await persist();
+  document.getElementById('settingsDlg').close();
+  renderHeader();
+  toast('선수 정보를 저장했습니다');
+}
+
+/* ================= 유틸 ================= */
+function go(v){
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active', s.id==='view-'+v));
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.v===v));
+  window.scrollTo({top:0});
+}
+function ytEmbed(url){
+  try{
+    const u = new URL(url);
+    let id='', t='';
+    if(u.hostname.includes('youtu.be')) id = u.pathname.slice(1).split('/')[0];
+    else if(u.hostname.includes('youtube.com')){
+      if(u.pathname.startsWith('/shorts/')) id = u.pathname.split('/')[2];
+      else if(u.pathname.startsWith('/embed/')) id = u.pathname.split('/')[2];
+      else id = u.searchParams.get('v')||'';
+    }
+    if(!id) return null;
+    t = u.searchParams.get('t')||'';
+    const sec = t? String(parseInt(t)) : '';
+    return `https://www.youtube.com/embed/${id}${sec?`?start=${sec}`:''}`;
+  }catch(e){ return null; }
+}
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escAttr(s){ return esc(s); }
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+
+/* ================= 시작 ================= */
+(async function init(){
+  initChips();
+  resetForm();
+  await loadState();
+  render();
+})();
+</script>
+</body>
+</html>
